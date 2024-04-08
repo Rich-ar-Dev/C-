@@ -2,101 +2,160 @@
 #include <queue>
 using namespace std;
 
-// Structure to represent each item in the priority queue
-struct PQItem {
-    int value;
-    int priority;
+struct QueueElement {
+    int value; 
+   int priority;
 
-    // Constructor
-    PQItem(int val, int prio) : value(val), priority(prio) {}
+    // Parameterized constructor
+    QueueElement(int v, int p) : value(v), priority(p) {}
 
-    // Overloading '<' operator for comparison
-    bool operator<(const PQItem& other) const {
-        // Higher priority items have lower priority values
-        return priority > other.priority;
-    }
+    // Default constructor
+    QueueElement() : value(0), priority(0) {}
 };
 
 class PriorityQueue {
 private:
-    priority_queue<PQItem> pq;
+    int front;
+    int rear;
+    QueueElement arr[5];
+    int itemCount;
 
 public:
-    // Function to enqueue an item with priority
-    void enqueue(int val, int priority) {
-        pq.push(PQItem(val, priority));
+    PriorityQueue() {
+        itemCount = 0;
+        front = -1;
+        rear = -1;
+        for (int i = 0; i < 5; i++) {
+            arr[i] = QueueElement(); // Use default constructor
+        }
     }
 
-    // Function to dequeue the item with the highest priority
-    int dequeue() {
+   bool isEmpty() {
+        return (front == -1 && rear == -1);
+    }
+
+    bool isFull() {
+        return ((rear + 1) % 5 == front);
+    }
+
+    void enqueue(int val, int priority) {
+        if (isFull()) {
+            cout << "Queue full" << endl;
+            return;
+        } else if (isEmpty()) {
+            rear = 0;
+            front = 0;
+            arr[rear] = QueueElement(val, priority);
+        } else {
+            rear = (rear + 1) % 5;
+            arr[rear] = QueueElement(val, priority);
+        }
+        itemCount++;
+        reorder();
+    }
+
+    QueueElement dequeue() {
+        QueueElement x(0, 0);
         if (isEmpty()) {
             cout << "Queue is Empty" << endl;
-            return -1; // Return -1 or any other error value
+            return x;
+        } else if (rear == front) {
+            x = arr[rear];
+            rear = -1;
+            front = -1;
+            itemCount--;
+            return x;
+        } else {
+            x = arr[front];
+            front = (front + 1) % 5;
+            itemCount--;
+            return x;
         }
-        int val = pq.top().value; // Extract value from the item with highest priority
-        pq.pop(); // Remove the item
-        return val;
     }
 
-    // Function to check if the priority queue is empty
-    bool isEmpty() {
-        return pq.empty();
+    void reorder() {
+        // Bubble sort (can be optimized for larger queues)
+        for (int i = 0; i < itemCount; i++) {
+            for (int j = 0; j < itemCount - i - 1; j++) {
+                if (arr[j].priority < arr[j + 1].priority) {
+                    // Swap elements
+                    QueueElement temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+            }
+        }
     }
 
-    // Function to display all values in the priority queue
+    int count() {
+        return itemCount;
+    }
+
     void display() {
-        if (isEmpty()) {
-            cout << "Priority Queue is Empty" << endl;
-            return;
+        cout << "All values in the Queue are - " << endl;
+        for (int i = 0; i < itemCount; i++) {
+            cout << "Value: " << arr[i].value << ", Priority: " << arr[i].priority << endl;
         }
-        cout << "All values in the Priority Queue are: ";
-        priority_queue<PQItem> temp = pq; // Create a copy of the priority queue
-        while (!temp.empty()) {
-            cout << temp.top().value << " "; // Display the value of each item
-            temp.pop();
-        }
-        cout << endl;
     }
 };
 
 int main() {
-    PriorityQueue pq1;
-    int value, priority, option;
+    PriorityQueue q1;
+    int option;
+
     do {
         cout << "\n\nWhat operation do you want to perform? Select Option number. Enter 0 to exit." << endl;
         cout << "1. Enqueue()" << endl;
         cout << "2. Dequeue()" << endl;
         cout << "3. isEmpty()" << endl;
-        cout << "4. Display()" << endl;
-        cout << "0. Exit" << endl;
-
+        cout << "4. isFull()" << endl;
+        cout << "5. count()" << endl;
+        cout << "6. display()" << endl;
+        cout << "7. Clear Screen" << endl << endl;
         cin >> option;
 
         switch (option) {
-        case 0:
-            break;
-        case 1:
-            cout << "Enter value to enqueue: ";
-            cin >> value;
-            cout << "Enter priority: ";
-            cin >> priority;
-            pq1.enqueue(value, priority);
-            break;
-        case 2:
-            cout << "Dequeued value: " << pq1.dequeue() << endl;
-            break;
-        case 3:
-            if (pq1.isEmpty())
-                cout << "Queue is Empty" << endl;
-            else
-                cout << "Queue is not Empty" << endl;
-            break;
-        case 4:
-            pq1.display();
-            break;
-        default:
-            cout << "Enter Proper Option number " << endl;
-            break;
+            case 0:
+                break;
+            case 1: {
+                int value, priority;
+                cout << "Enqueue Operation \nEnter an item to Enqueue in the Queue" << endl;
+                cout << "Value: ";
+                cin >> value;
+                cout << "Priority: ";
+                cin >> priority;
+                q1.enqueue(value, priority);
+                break;
+            }
+            case 2: {
+                QueueElement dequeued = q1.dequeue();
+                cout << "Dequeue Operation \nDequeued Value : " << dequeued.value << ", Priority: " << dequeued.priority << endl;
+                break;
+            }
+            case 3:
+                if (q1.isEmpty())
+                    cout << "Queue is Empty" << endl;
+                else
+                    cout << "Queue is not Empty" << endl;
+                break;
+            case 4:
+                if (q1.isFull())
+                    cout << "Queue is Full" << endl;
+                else
+                    cout << "Queue is not Full" << endl;
+                break;
+            case 5:
+                cout << "Count Operation \nCount of items in Queue : " << q1.count() << endl;
+                break;
+            case 6:
+                cout << "Display Function Called - " << endl;
+                q1.display();
+                break;
+            case 7:
+                system("cls");
+                break;
+            default:
+                cout << "Enter Proper Option number " << endl;
         }
     } while (option != 0);
 
